@@ -9,7 +9,7 @@ fi
 IMAGE="kylemanna/openvpn"
 
 DATA="ovpn-data"
-HOSTNAME="vpn.example.com"
+HOSTNAME="dev.dockerlab.net"
 PORT=1194
 PROTO=udp
 
