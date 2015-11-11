@@ -3,7 +3,8 @@
 set -e
 
 if [ `whoami` != "root" ]; then 
-	echo You must run install.sh as root && exit
+	echo You must run install.sh as root
+	exit 126
 fi
 
 IMAGE="kylemanna/openvpn"

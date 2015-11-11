@@ -2,6 +2,11 @@
 
 set -e
 
+if [ `whoami` != "root" ]; then
+	echo "Please run this script as root."
+	exit 126
+fi
+
 read -p "Enter the name of the new client: " CLIENTNAME
 
 # The easyrsa tool will prompt for the CA password. This is
