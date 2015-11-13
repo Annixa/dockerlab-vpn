@@ -1,0 +1,20 @@
+vpn-data:
+    image: busybox:latest
+    container_name: vpn-data
+    volumes:
+    - /etc/openvpn
+
+vpn:
+#    image: annixa/dockerlab-vpn:latest
+    build: openvpn
+    container_name: vpn
+    volumes_from:
+    - vpn-data
+# override the bin for dev
+    volumes:
+    - ./openvpn/bin:/usr/local/bin
+    ports:
+    - "1194:1194/udp"
+    cap_add:
+    - NET_ADMIN
+

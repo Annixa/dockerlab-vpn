@@ -1,0 +1,55 @@
+FROM ubuntu:14.04
+MAINTAINER Adam Kenyon <akenyonpro@gmail.com>
+
+RUN apt-get update && \
+    apt-get install -y \
+        openvpn \
+        easy-rsa \
+        openvpn-auth-ldap && \
+    apt-get clean
+
+ENV OPENVPN /etc/openvpn
+ENV EASYRSA /usr/share/easy-rsa
+ENV EASYRSA_PKI $OPENVPN/pki
+ENV EASYRSA_VARS_FILE $OPENVPN/vars
+
+# openvpn configuration comes from the data container
+VOLUME [ "/etc/openvpn" ]
+
+# enable packet forwarding for ipv4
+RUN sed -i "s/#net\.ipv4\.ip_forward=1/net.ipv4.ip_forward=1/" /etc/sysctl.conf
+
+# create the openvpn server configuration using the provided sample
+RUN gunzip -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz > /etc/openvpn/server.conf && \
+    sed -i "s/dh1024\.pem/dh2048\.pem/" /etc/openvpn/server.conf && \
+    echo "\n\npush \"route 172.17.0.0 255.255.0.0\"" >> /etc/openvpn/server.conf && \
+    sed -i "s/;\(user\|group\) no\(body\|group\)/\1 no\2/" /etc/openvpn/server.conf
+
+# TODO configure DNS server when we have an IP
+
+# configure the CA
+RUN cp -r /usr/share/easy-rsa/ /etc/openvpn && \
+    mkdir /etc/openvpn/easy-rsa/keys && \
+    sed -i "s/KEY_COUNTRY=\".*\"/KEY_COUNTRY=\"US\"/" /etc/openvpn/easy-rsa/vars && \
+    sed -i "s/KEY_PROVINCE=\".*\"/KEY_PROVINCE=\"CA\"/" /etc/openvpn/easy-rsa/vars && \
+    sed -i "s/KEY_CITY=\".*\"/KEY_CITY=\"SanDiego\"/" /etc/openvpn/easy-rsa/vars && \
+    sed -i "s/KEY_ORG=\".*\"/KEY_ORG=\"Annixa\"/" /etc/openvpn/easy-rsa/vars && \
+    sed -i "s/KEY_EMAIL=\".*\"/KEY_EMAIL=\"info@dockerlab.net\"/" /etc/openvpn/easy-rsa/vars && \
+    sed -i "s/KEY_NAME=\".*\"/KEY_NAME=\"server\"/" /etc/openvpn/easy-rsa/vars
+
+# generate the Diffie-Hellman parameters
+RUN openssl dhparam -out /etc/openvpn/dh2048.pem 2048
+
+# add the ldap auth mod
+RUN mkdir /etc/openvpn/auth
+COPY auth-ldap.conf /etc/openvpn/auth
+RUN echo plugin /usr/lib/openvpn/openvpn-auth-ldap.so /etc/openvpn/auth/auth-ldap.conf
+
+# add the entrypoint script
+COPY entrypoint.sh /root
+WORKDIR /root
+
+EXPOSE 1192/udp
+ENTRYPOINT entrypoint.sh
+CMD [ "openvpn", "--config", "/etc/openvpn/server.conf" ]
+

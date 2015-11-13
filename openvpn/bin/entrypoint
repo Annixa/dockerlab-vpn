@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+
+# Check OVPN_DIR for a server configuration
+if [ -z ${OVPN_DIR+x} ]; then
+	echo Error: OVPN_DIR variable is required. && exit 1
+fi
+if [ ! -d $OVPN_DIR ]; then
+	echo $OVPN_DIR not found! && exit 1
+fi
+if [[ ! -e $OVPN_DIR/server.conf ]]; then
+	# The config dir hasn't been initialized
+	# Run the install script
+	openvpn_install
+else
+	# Looks like OpenVPN is already installed
+	echo $OVPN_DIR/server.conf found. Not going to run openvpn_install.
+fi
+
+IMAGE="annixa/dockerlab-vpn"
+
+if [ -z ${IMAGE+x} ]; then
+	echo Error: IMAGE variable is required. && exit 1
+fi
+
+# Check for the pki configuration
+if [ ! -d $OVPN_DIR/easy-rsa ]; then
+	# The easy-rsa dir hasn't been initialized
+	# Let the user know that they need to run the initpki script
+	echo -e "$OVPN_DIR/easy-rsa not found. You can initialize it by running:\n"
+	echo -e "docker run -it $IMAGE openvpn_initpki\n"
+	echo -e "(Or you can just map in the /etc/openvpn/easy-rsa using a volume.)"
+	exit 1
+fi
+
+
+# Run the given CMD
+exec "$@"
+
