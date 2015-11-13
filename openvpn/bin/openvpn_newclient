@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# copy the sample client config into our install for convenience
+if [ ! -f $OVPN_DIR/easy-rsa/keys/client.ovpn ]; then
+	cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf $OVPN_DIR/easy-rsa/keys/client.ovpn
+fi
+
+read -p "Enter a name for the new VPN client: " CLIENT
+
+cd $OVPN_DIR/easy-rsa
+. ./vars
+./build-key $CLIENT

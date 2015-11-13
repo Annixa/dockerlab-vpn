@@ -13,12 +13,15 @@ WORKDIR /etc/openvpn
 
 # TODO configure DNS server in our conf once we have one running
 
-# add the ldap auth mod
-RUN mkdir /etc/openvpn/auth
-COPY auth-ldap.conf /etc/openvpn/auth
-
 # initialize some installation variables
+# the OpenVPN install location
 ENV OVPN_DIR /etc/openvpn
+# the data container's name
+ENV OVPN_DATA vpn-data
+
+# add the ldap auth mod
+RUN mkdir $OVPN_DIR/auth
+COPY auth-ldap.conf $OVPN_DIR/auth
 
 # run the OpenVPN daemon on UDP 1194, the default port
 EXPOSE 1194/udp

@@ -1,5 +1,20 @@
 #!/bin/bash
 
+set -e
+
+
+# check for previous install
+if [ -d $OVPN_DIR/easy-rsa/keys ]; then
+	echo $OVPN_DIR/easy-rsa/keys already exists.
+
+	read -p "Are you sure you want to re-initialize the PKI configuration? [y/N] " yn
+	if [ "$ys" != "y" ]; then
+		exit
+	fi
+fi
+
+
+# gather all the easy-rsa vars
 if [ -z ${KEY_COUNTRY+x} ]; then
 	KEY_COUNTRY=US
 	echo Warning: Using default KEY_COUNTRY=$KEY_COUNTRY for CA config
@@ -13,7 +28,7 @@ if [ -z ${KEY_CITY+x} ]; then
 	echo Warning: Using default KEY_CITY=$KEY_CITY for CA config
 fi
 if [ -z ${KEY_ORG+x} ]; then
-	KEY_ORG=Example Company
+	KEY_ORG="Example Company"
 	echo Warning: Using default KEY_ORG=$KEY_ORG for CA config
 fi
 if [ -z ${KEY_EMAIL+x} ]; then
@@ -29,6 +44,7 @@ if [ -z ${KEY_NAME+x} ]; then
 	echo Warning: Using default KEY_NAME=$KEY_NAME for CA config
 fi
 
+rm -rf $OVPN_DIR/easy-rsa
 
 # create the easy-rsa config dir from the samples in /usr/share
 cp -r /usr/share/easy-rsa/ $OVPN_DIR
@@ -61,4 +77,10 @@ cp $OVPN_DIR/easy-rsa/keys/$KEY_NAME.{crt,key} $OVPN_DIR
 cp $OVPN_DIR/easy-rsa/keys/ca.crt $OVPN_DIR
 
 
+# show a success mesage
+echo CA built and server crt/key installed to $OVPN_DIR.
 ls -l $OVPN_DIR
+
+
+echo -e "Your OpenVPN server is ready to go! Now try generating a client cert:\n"
+echo docker run --rm --volumes-from $OVPN_DATA -it $IMAGE openvpn_newclient

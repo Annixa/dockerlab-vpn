@@ -29,6 +29,6 @@ echo -e "\n\npush \"route 172.17.0.0 255.255.0.0\"" >> $OVPN_DIR/server.conf
 # run as nobody nogroup
 sed -i "s/;\(user\|group\) no\(body\|group\)/\1 no\2/" $OVPN_DIR/server.conf
 # add the ldap auth plugin
-echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so $OVPN_DIR/auth/auth-ldap.conf" >> $OVPN_DIR/server.conf
+#echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so $OVPN_DIR/auth/auth-ldap.conf" >> $OVPN_DIR/server.conf
 
 
