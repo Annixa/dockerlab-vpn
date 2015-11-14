@@ -1,2 +1,8 @@
 data/openvpn/ipp.txt
 data/openvpn/openvpn-status.log
+data/openvpn/ca.crt
+data/openvpn/server.crt
+data/openvpn/server.key
+data/openvpn/dh2048.pem
+data/openvpn/easy-rsa/keys/ca.*
+data/openvpn/easy-rsa/keys/server.*
