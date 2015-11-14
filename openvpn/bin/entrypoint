@@ -46,6 +46,17 @@ if [ ! -c /dev/net/tun ]; then
 	mknod /dev/net/tun c 10 200
 fi
 
+# For IPv6 forwarding, looks like we'll need to run in privileged
+#ip -6 route show default 2>/dev/null
+#if [ $? = 0 ]; then
+#	echo "Enabling IPv6 Forwarding"
+#	# If this fails, ensure the docker container is run with --privileged
+#	# Could be side stepped with `ip netns` madness to drop privileged flag
+#
+#	sysctl net.ipv6.conf.default.forwarding=1
+#	sysctl net.ipv6.conf.all.forwarding=1
+#fi
+
 
 # Run the given CMD
 exec "$@"

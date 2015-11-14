@@ -1,9 +1,8 @@
 vpn-data:
-    image: busybox:latest
+    build: data
     container_name: vpn-data
     volumes:
-# map in the openvpn dir unless you feel like rebuilding
-    - /etc/openvpn
+    - ./data/openvpn:/etc/openvpn
 
 vpn:
 #    image: annixa/dockerlab-vpn:latest
