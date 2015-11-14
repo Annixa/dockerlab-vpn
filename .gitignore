@@ -1,1 +1,2 @@
-openvpn/.openvpn
+data/openvpn/ipp.txt
+data/openvpn/openvpn-status.log
