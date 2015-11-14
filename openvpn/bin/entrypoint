@@ -12,18 +12,17 @@ if [ ! -d $OVPN_DIR ]; then
 fi
 if [[ ! -e $OVPN_DIR/server.conf ]]; then
 	# The config dir hasn't been initialized
-	# Run the install script
+	# Run the install script real quick
 	openvpn_install
-#else
-	# Looks like OpenVPN is already installed
-	# echo $OVPN_DIR/server.conf found. Not going to run openvpn_install.
 fi
+
 
 export IMAGE="dockerlabvpn_vpn"
 
 if [ -z ${IMAGE+x} ]; then
 	echo Error: IMAGE variable is required. && exit 1
 fi
+
 
 # Check for the pki configuration
 if [ ! -d $OVPN_DIR/easy-rsa ]; then
@@ -36,6 +35,15 @@ if [ ! -d $OVPN_DIR/easy-rsa ]; then
 		echo -e "(Or you can just map in $OVPN_DIR/easy-rsa using a volume?)"
 		exit 1
 	fi
+fi
+
+
+# Check for the tunnel device
+if [ ! -d /dev/net ]; then
+	mkdir -p /dev/net
+fi
+if [ ! -c /dev/net/tun ]; then
+	mknod /dev/net/tun c 10 200
 fi
 
 

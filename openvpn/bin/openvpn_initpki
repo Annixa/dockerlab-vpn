@@ -17,31 +17,24 @@ fi
 # gather all the easy-rsa vars
 if [ -z ${KEY_COUNTRY+x} ]; then
 	KEY_COUNTRY=US
-	echo Warning: Using default KEY_COUNTRY=$KEY_COUNTRY for CA config
 fi
 if [ -z ${KEY_PROVINCE+x} ]; then
 	KEY_PROVINCE=CA
-	echo Warning: Using default KEY_PROVINCE=$KEY_PROVINCE for CA config
 fi
 if [ -z ${KEY_CITY+x} ]; then
 	KEY_CITY=SanDiego
-	echo Warning: Using default KEY_CITY=$KEY_CITY for CA config
 fi
 if [ -z ${KEY_ORG+x} ]; then
 	KEY_ORG="Example Company"
-	echo Warning: Using default KEY_ORG=$KEY_ORG for CA config
 fi
 if [ -z ${KEY_EMAIL+x} ]; then
 	KEY_EMAIL=info@example.com
-	echo Warning: Using default KEY_EMAIL=$KEY_EMAIL for CA config
 fi
 if [ -z ${KEY_OU+x} ]; then
 	KEY_OU=MyOrgUnit
-	echo Warning: Using default KEY_OU=$KEY_OU for CA config
 fi
 if [ -z ${KEY_NAME+x} ]; then
 	KEY_NAME=server
-	echo Warning: Using default KEY_NAME=$KEY_NAME for CA config
 fi
 
 rm -rf $OVPN_DIR/easy-rsa

@@ -14,11 +14,6 @@ HOSTNAME="dev.dockerlab.net"
 PORT=1194
 PROTO=udp
 
-
-# enable packet forwarding for ipv4
-sed -i "s/#net\.ipv4\.ip_forward=1/net.ipv4.ip_forward=1/" /etc/sysctl.conf
-
-
 # create the OpenVPN server configuration using a one of their sample files
 sample_file=/usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz
 gunzip -c $sample_file > $OVPN_DIR/server.conf

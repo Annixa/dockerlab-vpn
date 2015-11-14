@@ -3,7 +3,7 @@ vpn-data:
     container_name: vpn-data
     volumes:
 # map in the openvpn dir unless you feel like rebuilding
-    - ./openvpn/.openvpn:/etc/openvpn
+    - /etc/openvpn
 
 vpn:
 #    image: annixa/dockerlab-vpn:latest
@@ -12,10 +12,10 @@ vpn:
     volumes_from:
     - vpn-data
 # override the bin for dev
-    volumes:
-    - ./openvpn/bin:/usr/local/bin
+#    volumes:
+#    - ./openvpn/bin:/usr/local/bin
 # override the command for dev
-#    command: ls -lR /etc/openvpn
+#    command: tail -f /dev/null
     ports:
     - "1194:1194/udp"
     cap_add:
