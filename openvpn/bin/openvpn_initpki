@@ -3,15 +3,26 @@
 set -e
 
 
-# check for previous install
-if [ -d $OVPN_DIR/easy-rsa/keys ]; then
-	echo $OVPN_DIR/easy-rsa/keys already exists.
+pki=$OVPN_DIR/pki
 
+
+# check for previous install
+if [ -d $pki ] &&
+   [ -d $pki/private ] &&
+   [ -f $pki/private/server.key ] &&
+   [ -f $pki/dh.pem ]
+then
+	echo It looks like your PKI configuration has been initialized already.
 	read -p "Are you sure you want to re-initialize the PKI configuration? [y/N] " yn
-	if [ "$ys" != "y" ]; then
+	if [ "$yn" != "y" ]; then
+		echo Exiting upon user request
 		exit
 	fi
 fi
+
+
+# remove any previous install
+rm -rf $pki/*
 
 
 # gather all the easy-rsa vars
@@ -37,43 +48,52 @@ if [ -z ${KEY_NAME+x} ]; then
 	KEY_NAME=server
 fi
 
-rm -rf $OVPN_DIR/easy-rsa
-
-# create the easy-rsa config dir from the samples in /usr/share
-cp -r /usr/share/easy-rsa/ $OVPN_DIR
-mkdir $OVPN_DIR/easy-rsa/keys
 
 # configure the easy-rsa vars
-sed -i "s/KEY_COUNTRY=\".*\"/KEY_COUNTRY=\"$KEY_COUNTRY\"/" $OVPN_DIR/easy-rsa/vars
-sed -i "s/KEY_PROVINCE=\".*\"/KEY_PROVINCE=\"$KEY_PROVINCE\"/" $OVPN_DIR/easy-rsa/vars
-sed -i "s/KEY_CITY=\".*\"/KEY_CITY=\"$KEY_CITY\"/" $OVPN_DIR/easy-rsa/vars
-sed -i "s/KEY_ORG=\".*\"/KEY_ORG=\"$KEY_ORG\"/" $OVPN_DIR/easy-rsa/vars
-sed -i "s/KEY_EMAIL=\".*\"/KEY_EMAIL=\"$KEY_EMAIL\"/" $OVPN_DIR/easy-rsa/vars
-sed -i "s/KEY_OU=\".*\"/KEY_OU=\"$KEY_OU\"/" $OVPN_DIR/easy-rsa/vars
-sed -i "s/KEY_NAME=\".*\"/KEY_NAME=\"$KEY_NAME\"/" $OVPN_DIR/easy-rsa/vars
+sed -i "s/KEY_COUNTRY=\".*\"/KEY_COUNTRY=\"$KEY_COUNTRY\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_PROVINCE=\".*\"/KEY_PROVINCE=\"$KEY_PROVINCE\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_CITY=\".*\"/KEY_CITY=\"$KEY_CITY\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_ORG=\".*\"/KEY_ORG=\"$KEY_ORG\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_EMAIL=\".*\"/KEY_EMAIL=\"$KEY_EMAIL\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_OU=\".*\"/KEY_OU=\"$KEY_OU\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_NAME=\".*\"/KEY_NAME=\"$KEY_NAME\"/" $EASYRSA_DIR/vars
 
 
 # generate the Diffie-Hellman parameters
-openssl dhparam -out $OVPN_DIR/dh2048.pem 2048
+if [ ! -f $pki/dh.pem ]; then
+	openssl dhparam -out $pki/dh.pem 2048
+else
+	echo No need to create new DH params.
+fi
 
 
-# initialize the PKI
-cd $OVPN_DIR/easy-rsa
+# initialize the CA
+cd $EASYRSA_DIR
 . ./vars
 ./clean-all
 ./build-ca
 
+echo
+ls -lR $EASYRSA_DIR
+echo
 
-# generate a cert and key for the server
+# generate a cert/key for the server
 ./build-key-server $KEY_NAME
-cp $OVPN_DIR/easy-rsa/keys/$KEY_NAME.{crt,key} $OVPN_DIR
-cp $OVPN_DIR/easy-rsa/keys/ca.crt $OVPN_DIR
+# move the certs and keys into their proper pki location
+mkdir -p $pki/{certs,private}
+cp $EASYRSA_DIR/keys/ca.crt $pki/certs
+cp $EASYRSA_DIR/keys/ca.key $pki/private
+cp $EASYRSA_DIR/keys/$KEY_NAME.crt $pki/certs/server.crt
+cp $EASYRSA_DIR/keys/$KEY_NAME.key $pki/private/server.key
+# show a success message
+echo CA built and server crt/key installed to $pki.
 
 
-# show a success mesage
-echo CA built and server crt/key installed to $OVPN_DIR.
-ls -l $OVPN_DIR
+# create the ta.key
+openvpn --genkey --secret $pki/ta.key
+echo ta.key generated
 
 
-echo -e "Your OpenVPN server is ready to go! Now try generating a client cert:\n"
-echo docker run --rm --volumes-from $OVPN_DATA -it $IMAGE openvpn_newclient
+echo -e "\n\nYour OpenVPN server is configured and ready to go! Now try generating a client cert using:\n"
+echo -e "sudo docker run --rm --volumes-from <this container> -it <this image> openvpn_newclient\n"
+

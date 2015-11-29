@@ -1,0 +1,20 @@
+
+client
+nobind
+dev tun
+remote-cert-tls server
+
+remote dev.dockerlab.net 1194 udp
+
+
+<key>
+</key>
+<cert>
+</cert>
+<ca>
+</ca>
+<tls-auth>
+</tls-auth>
+key-direction 1
+
+redirect-gateway def1

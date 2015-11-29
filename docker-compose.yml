@@ -1,19 +1,13 @@
-vpn-data:
-    build: data
-    container_name: vpn-data
-    volumes:
-    - ./data/openvpn:/etc/openvpn
-
 vpn:
 #    image: annixa/dockerlab-vpn:latest
     build: openvpn
     container_name: vpn
-    volumes_from:
-    - vpn-data
-# override the bin for dev
 #    volumes:
+#    - ./pki:/etc/openvpn/pki
+# override the bin for dev
 #    - ./openvpn/bin:/usr/local/bin
 # override the command for dev
+#    entrypoint: sudo
 #    command: tail -f /dev/null
     ports:
     - "1194:1194/udp"

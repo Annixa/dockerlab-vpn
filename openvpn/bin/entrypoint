@@ -10,6 +10,7 @@ fi
 if [ ! -d $OVPN_DIR ]; then
 	echo $OVPN_DIR not found! && exit 1
 fi
+
 if [[ ! -e $OVPN_DIR/server.conf ]]; then
 	# The config dir hasn't been initialized
 	# Run the install script real quick
@@ -25,14 +26,26 @@ fi
 
 
 # Check for the pki configuration
-if [ ! -d $OVPN_DIR/easy-rsa ]; then
-	# The easy-rsa dir hasn't been initialized
-
+pki=$OVPN_DIR/pki
+if [ ! -d $pki/certs ] ||
+   [ ! -d $pki/private ] ||
+   [ ! -e $pki/certs/server.crt ] ||
+   [ ! -e $pki/certs/ca.crt ] || 
+   [ ! -e $pki/ta.key ]
+then
 	if [ "$1" != "openvpn_initpki" ]; then
+		if [ ! -d $pki ]; then
+			mkdir $pki
+		fi
+
 		# Let the user know that they need to run the initpki script
 		echo -e "PKI configuration not found. You can initialize it now by running:\n"
-		echo -e "docker run --rm --volumes-from $OVPN_DATA -it $IMAGE openvpn_initpki\n"
-		echo -e "(Or you can just map in $OVPN_DIR/easy-rsa using a volume?)"
+		echo -e "docker run --rm --volumes-from <this container> -it <this image> openvpn_initpki\n"
+		echo -e "Or you can just map in $pki/ using a volume. Make sure to include all the following files at a minimum:\n"
+		echo -e "certs/server.crt    Your server certificate"
+		echo -e "certs/ca.crt        Your CA server's certificate"
+		echo -e "private/server.key  Your server's private key"
+		echo -e "ta.key              Your OpenVPN TLS key"
 		exit 1
 	fi
 fi
@@ -45,6 +58,7 @@ fi
 if [ ! -c /dev/net/tun ]; then
 	mknod /dev/net/tun c 10 200
 fi
+
 
 # For IPv6 forwarding, looks like we'll need to run in privileged
 #ip -6 route show default 2>/dev/null

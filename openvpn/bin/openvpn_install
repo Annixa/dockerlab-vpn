@@ -8,22 +8,21 @@ if [ `whoami` != "root" ]; then
 	exit 126
 fi
 
+# create the config from the .example
+cp $OVPN_DIR/server.conf.example $OVPN_DIR/server.conf
 
-DATA="ovpn-data"
-HOSTNAME="dev.dockerlab.net"
-PORT=1194
-PROTO=udp
+#if [ -z "$LDAP" ]; then
+#	echo Not using LDAP auth
+#else
+#	# add the ldap auth plugin
+#	echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so $OVPN_DIR/auth/auth-ldap.conf" >> $OVPN_DIR/server.conf
+#fi
 
-# create the OpenVPN server configuration using a one of their sample files
-sample_file=/usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz
-gunzip -c $sample_file > $OVPN_DIR/server.conf
-# double the DH value
-sed -i "s/dh1024\.pem/dh2048\.pem/" $OVPN_DIR/server.conf
-# push the docker route
-echo -e "\n\npush \"route 172.17.0.0 255.255.0.0\"" >> $OVPN_DIR/server.conf
-# run as nobody nogroup
-sed -i "s/;\(user\|group\) no\(body\|group\)/\1 no\2/" $OVPN_DIR/server.conf
-# add the ldap auth plugin
-#echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so $OVPN_DIR/auth/auth-ldap.conf" >> $OVPN_DIR/server.conf
-
+#if [ -z "$ROUTE" ]; then
+#	echo Not pushing any routes
+#	#export ROUTE="172.17.0.0 255.255.0.0"
+#else
+#	echo Pushing the route to the server config
+#	echo -e "\npush \"route $ROUTE\"" >> $OVPN_DIR/server.conf
+#fi
 

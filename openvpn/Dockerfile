@@ -8,22 +8,23 @@ RUN apt-get update && \
         openvpn-auth-ldap && \
     apt-get clean
 
-VOLUME [ "/etc/openvpn" ]
+VOLUME ["/etc/openvpn", "/usr/share/easy-rsa"]
 WORKDIR /etc/openvpn
 
 # TODO configure DNS server in our conf once we have one running
 
-# initialize some installation variables
 # the OpenVPN install location
 ENV OVPN_DIR /etc/openvpn
-# the data container's name
-ENV OVPN_DATA vpn-data
+# the Easy RSA install location
+ENV EASYRSA_DIR /usr/share/easy-rsa
 
-# add the ldap auth mod
+# add our example config files
+ADD ./*.example /etc/openvpn/
+
+# add the ldap auth config
 RUN mkdir $OVPN_DIR/auth
 COPY auth-ldap.conf $OVPN_DIR/auth
 
-# run the OpenVPN daemon on UDP 1194, the default port
 EXPOSE 1194/udp
 ENTRYPOINT [ "entrypoint" ]
 CMD [ "openvpn", "--config", "/etc/openvpn/server.conf" ]

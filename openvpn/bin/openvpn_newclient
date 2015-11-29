@@ -1,12 +1,9 @@
 #!/bin/bash
 
-# copy the sample client config into our install for convenience
-if [ ! -f $OVPN_DIR/easy-rsa/keys/client.ovpn ]; then
-	cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf $OVPN_DIR/easy-rsa/keys/client.ovpn
-fi
-
 read -p "Enter a name for the new VPN client: " CLIENT
 
-cd $OVPN_DIR/easy-rsa
+cd $EASYRSA_DIR
 . ./vars
 ./build-key $CLIENT
+
+echo Now, you need to use the client.ovpn.example to create yourself a client configuration. Yes, you need to paste in all those keys by hand...
