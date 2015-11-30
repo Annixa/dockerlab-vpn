@@ -1,35 +1,44 @@
-FROM ubuntu:14.04
+FROM debian:jessie
 MAINTAINER Adam Kenyon <akenyonpro@gmail.com>
 
 RUN apt-get update && \
     apt-get install -y \
-        openvpn \
-        easy-rsa \
-        openvpn-auth-ldap && \
-    apt-get clean
+#     easy-rsa \
+      iptables \
+      openvpn \
+      openvpn-auth-ldap \
+      wget && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-VOLUME ["/etc/openvpn", "/usr/share/easy-rsa"]
-WORKDIR /etc/openvpn
+RUN mkdir -p /usr/local/share/easy-rsa && \
+    wget -O - https://github.com/OpenVPN/easy-rsa/archive/v3.0.0.tar.gz | tar xzf - --strip=1 -C /usr/local/share/easy-rsa easy-rsa-3.0.0/easyrsa3 && \
+    ln -s /usr/local/share/easy-rsa/easyrsa3/easyrsa /usr/local/bin
 
 # TODO configure DNS server in our conf once we have one running
 
-# the OpenVPN install location
-ENV OVPN_DIR /etc/openvpn
-# the Easy RSA install location
-ENV EASYRSA_DIR /usr/share/easy-rsa
+ENV OPENVPN /etc/openvpn
+ENV EASYRSA /usr/local/share/easy-rsa/easyrsa3
+ENV EASYRSA_PKI $OPENVPN/pki
+ENV EASYRSA_VARS_FILE $OPENVPN/vars
+ENV HOSTNAME dev.dockerlab.net
+
+VOLUME ["$OPENVPN", "$EASYRSA"]
+WORKDIR $OPENVPN
 
 # add our example config files
-ADD ./*.example /etc/openvpn/
+#ADD ./*.example /etc/openvpn/
 
 # add the ldap auth config
-RUN mkdir $OVPN_DIR/auth
-COPY auth-ldap.conf $OVPN_DIR/auth
+#RUN mkdir $OPENVPN/auth
+#COPY auth-ldap.conf $OPENVPN/auth
 
 EXPOSE 1194/udp
-ENTRYPOINT [ "entrypoint" ]
-CMD [ "openvpn", "--config", "/etc/openvpn/server.conf" ]
+ENTRYPOINT ["entrypoint"]
+#CMD ["openvpn", "--config", "$OPENVPN/server.conf"]
+CMD ["ovpn_run"]
 
 # add our bin last, since it's liable to change
 ADD ./bin /usr/local/bin/
-RUN chmod +x /usr/local/bin/*
+#RUN chmod +x /usr/local/bin/*
+RUN chmod a+x /usr/local/bin/*
 

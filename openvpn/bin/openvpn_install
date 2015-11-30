@@ -9,13 +9,13 @@ if [ `whoami` != "root" ]; then
 fi
 
 # create the config from the .example
-cp $OVPN_DIR/server.conf.example $OVPN_DIR/server.conf
+cp $OPENVPN/server.conf.example $OPENVPN/server.conf
 
 #if [ -z "$LDAP" ]; then
 #	echo Not using LDAP auth
 #else
 #	# add the ldap auth plugin
-#	echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so $OVPN_DIR/auth/auth-ldap.conf" >> $OVPN_DIR/server.conf
+#	echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so $OPENVPN/auth/auth-ldap.conf" >> $OPENVPN/server.conf
 #fi
 
 #if [ -z "$ROUTE" ]; then
@@ -23,6 +23,6 @@ cp $OVPN_DIR/server.conf.example $OVPN_DIR/server.conf
 #	#export ROUTE="172.17.0.0 255.255.0.0"
 #else
 #	echo Pushing the route to the server config
-#	echo -e "\npush \"route $ROUTE\"" >> $OVPN_DIR/server.conf
+#	echo -e "\npush \"route $ROUTE\"" >> $OPENVPN/server.conf
 #fi
 

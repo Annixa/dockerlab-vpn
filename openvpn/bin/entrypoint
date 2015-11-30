@@ -3,18 +3,20 @@
 set -e
 
 
-# Check OVPN_DIR for a server configuration
-if [ -z ${OVPN_DIR+x} ]; then
-	echo Error: OVPN_DIR variable is required. && exit 1
+# Check $OPENVPN for a server configuration
+if [ -z ${OPENVPN+x} ]; then
+	echo Error: \$OPENVPN variable is required.
+	exit 1
 fi
-if [ ! -d $OVPN_DIR ]; then
-	echo $OVPN_DIR not found! && exit 1
+if [ ! -d $OPENVPN ]; then
+	echo $OPENVPN not found!
+	exit 1
 fi
 
-if [[ ! -e $OVPN_DIR/server.conf ]]; then
-	# The config dir hasn't been initialized
-	# Run the install script real quick
-	openvpn_install
+if [[ ! -e $OPENVPN/openvpn.conf ]]; then
+	# The config dir hasn't been initialized, run the install script real quick
+#	openvpn_install
+	ovpn_genconfig -u udp://$HOSTNAME
 fi
 
 
@@ -26,26 +28,38 @@ fi
 
 
 # Check for the pki configuration
-pki=$OVPN_DIR/pki
-if [ ! -d $pki/certs ] ||
+pki=$OPENVPN/pki
+#if [ ! -d $pki/certs ] ||
+#   [ ! -d $pki/private ] ||
+#   [ ! -e $pki/certs/server.crt ] ||
+#   [ ! -e $pki/certs/ca.crt ] || 
+#   [ ! -e $pki/ta.key ]
+if [ ! -d $pki/issued ] ||
+   [ ! -e $pki/ca.crt ] ||
+   [ ! -e $pki/issued/${HOSTNAME}.crt ] ||
    [ ! -d $pki/private ] ||
-   [ ! -e $pki/certs/server.crt ] ||
-   [ ! -e $pki/certs/ca.crt ] || 
+   [ ! -e $pki/private/ca.key ] ||
+   [ ! -e $pki/private/${HOSTNAME}.key ] ||
    [ ! -e $pki/ta.key ]
 then
-	if [ "$1" != "openvpn_initpki" ]; then
-		if [ ! -d $pki ]; then
-			mkdir $pki
-		fi
+	#if [ "$1" != "openvpn_initpki" ]; then
+	if [ "$1" != "ovpn_initpki" ]; then
+		#if [ ! -d $pki ]; then
+		#	mkdir $pki
+		#fi
 
 		# Let the user know that they need to run the initpki script
 		echo -e "PKI configuration not found. You can initialize it now by running:\n"
-		echo -e "docker run --rm --volumes-from <this container> -it <this image> openvpn_initpki\n"
+		echo -e "docker run --rm --volumes-from <this container> -it <this image> ovpn_initpki\n"
 		echo -e "Or you can just map in $pki/ using a volume. Make sure to include all the following files at a minimum:\n"
-		echo -e "certs/server.crt    Your server certificate"
-		echo -e "certs/ca.crt        Your CA server's certificate"
-		echo -e "private/server.key  Your server's private key"
-		echo -e "ta.key              Your OpenVPN TLS key"
+		#echo -e "certs/server.crt        Your server certificate"
+		echo -e "issued/<HOSTNAME>.crt   Your server certificate"
+		#echo -e "certs/ca.crt            Your CA server's certificate"
+		echo -e "issued/ca.crt           Your CA certificate"
+		#echo -e "private/server.key      Your server's private key"
+		echo -e "private/<HOSTNAME>.key  Your server private key"
+		echo -e "private/ca.key          Your CA private key"
+		echo -e "ta.key                  Your OpenVPN TLS key"
 		exit 1
 	fi
 fi

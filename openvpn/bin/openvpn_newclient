@@ -2,7 +2,7 @@
 
 read -p "Enter a name for the new VPN client: " CLIENT
 
-cd $EASYRSA_DIR
+cd $EASYRSA
 . ./vars
 ./build-key $CLIENT
 

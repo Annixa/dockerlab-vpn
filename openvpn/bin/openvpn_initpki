@@ -3,7 +3,7 @@
 set -e
 
 
-pki=$OVPN_DIR/pki
+pki=$OPENVPN/pki
 
 
 # check for previous install
@@ -50,13 +50,13 @@ fi
 
 
 # configure the easy-rsa vars
-sed -i "s/KEY_COUNTRY=\".*\"/KEY_COUNTRY=\"$KEY_COUNTRY\"/" $EASYRSA_DIR/vars
-sed -i "s/KEY_PROVINCE=\".*\"/KEY_PROVINCE=\"$KEY_PROVINCE\"/" $EASYRSA_DIR/vars
-sed -i "s/KEY_CITY=\".*\"/KEY_CITY=\"$KEY_CITY\"/" $EASYRSA_DIR/vars
-sed -i "s/KEY_ORG=\".*\"/KEY_ORG=\"$KEY_ORG\"/" $EASYRSA_DIR/vars
-sed -i "s/KEY_EMAIL=\".*\"/KEY_EMAIL=\"$KEY_EMAIL\"/" $EASYRSA_DIR/vars
-sed -i "s/KEY_OU=\".*\"/KEY_OU=\"$KEY_OU\"/" $EASYRSA_DIR/vars
-sed -i "s/KEY_NAME=\".*\"/KEY_NAME=\"$KEY_NAME\"/" $EASYRSA_DIR/vars
+sed -i "s/KEY_COUNTRY=\".*\"/KEY_COUNTRY=\"$KEY_COUNTRY\"/" $EASYRSA/vars
+sed -i "s/KEY_PROVINCE=\".*\"/KEY_PROVINCE=\"$KEY_PROVINCE\"/" $EASYRSA/vars
+sed -i "s/KEY_CITY=\".*\"/KEY_CITY=\"$KEY_CITY\"/" $EASYRSA/vars
+sed -i "s/KEY_ORG=\".*\"/KEY_ORG=\"$KEY_ORG\"/" $EASYRSA/vars
+sed -i "s/KEY_EMAIL=\".*\"/KEY_EMAIL=\"$KEY_EMAIL\"/" $EASYRSA/vars
+sed -i "s/KEY_OU=\".*\"/KEY_OU=\"$KEY_OU\"/" $EASYRSA/vars
+sed -i "s/KEY_NAME=\".*\"/KEY_NAME=\"$KEY_NAME\"/" $EASYRSA/vars
 
 
 # generate the Diffie-Hellman parameters
@@ -68,23 +68,23 @@ fi
 
 
 # initialize the CA
-cd $EASYRSA_DIR
+cd $EASYRSA
 . ./vars
 ./clean-all
 ./build-ca
 
 echo
-ls -lR $EASYRSA_DIR
+ls -lR $EASYRSA
 echo
 
 # generate a cert/key for the server
 ./build-key-server $KEY_NAME
 # move the certs and keys into their proper pki location
 mkdir -p $pki/{certs,private}
-cp $EASYRSA_DIR/keys/ca.crt $pki/certs
-cp $EASYRSA_DIR/keys/ca.key $pki/private
-cp $EASYRSA_DIR/keys/$KEY_NAME.crt $pki/certs/server.crt
-cp $EASYRSA_DIR/keys/$KEY_NAME.key $pki/private/server.key
+cp $EASYRSA/keys/ca.crt $pki/certs
+cp $EASYRSA/keys/ca.key $pki/private
+cp $EASYRSA/keys/$KEY_NAME.crt $pki/certs/server.crt
+cp $EASYRSA/keys/$KEY_NAME.key $pki/private/server.key
 # show a success message
 echo CA built and server crt/key installed to $pki.
 
