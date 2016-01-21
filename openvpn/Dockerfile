@@ -32,7 +32,7 @@ WORKDIR $OPENVPN
 #COPY auth-ldap.conf $OPENVPN/auth
 
 EXPOSE 1194/udp
-#ENTRYPOINT ["entrypoint"]
+ENTRYPOINT ["entrypoint"]
 #CMD ["openvpn", "--config", "$OPENVPN/server.conf"]
 CMD ["ovpn_run"]
 

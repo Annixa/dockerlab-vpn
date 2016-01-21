@@ -3,37 +3,38 @@
 set -e
 
 
-# Check $OPENVPN for a server configuration
+# Expected variables
 if [ -z ${OPENVPN+x} ]; then
 	echo Error: \$OPENVPN variable is required.
 	exit 1
 fi
+
+
+# Hard-coded variables, sorry
+export CONTAINER="vpn"
+export IMAGE="vpn_vpn"
+export OVPN_NAT="1"
+
+
+# Check $OPENVPN for a server configuration
 if [ ! -d $OPENVPN ]; then
 	echo $OPENVPN not found!
 	exit 1
 fi
-
 if [[ ! -e $OPENVPN/openvpn.conf ]]; then
-	# The config dir hasn't been initialized, run the install script real quick
-#	openvpn_install
-	ovpn_genconfig -u udp://$HOSTNAME
-fi
-
-
-export IMAGE="dockerlabvpn_vpn"
-
-if [ -z ${IMAGE+x} ]; then
-	echo Error: IMAGE variable is required. && exit 1
+	# The config file hasn't been generated, run genconfig real quick
+	#	-d means don't set the default route
+	#	-N means "Configure NAT to access external server network"
+	#	-p sets custom push directives to set in the server config
+	#	-u sets the server's public URL
+	ovpn_genconfig -d -N \
+		-p "route 172.17.0.0 255.255.0.0" \
+		-u udp://$HOSTNAME
 fi
 
 
 # Check for the pki configuration
 pki=$OPENVPN/pki
-#if [ ! -d $pki/certs ] ||
-#   [ ! -d $pki/private ] ||
-#   [ ! -e $pki/certs/server.crt ] ||
-#   [ ! -e $pki/certs/ca.crt ] || 
-#   [ ! -e $pki/ta.key ]
 if [ ! -d $pki/issued ] ||
    [ ! -e $pki/ca.crt ] ||
    [ ! -e $pki/issued/${HOSTNAME}.crt ] ||
@@ -42,24 +43,16 @@ if [ ! -d $pki/issued ] ||
    [ ! -e $pki/private/${HOSTNAME}.key ] ||
    [ ! -e $pki/ta.key ]
 then
-	#if [ "$1" != "openvpn_initpki" ]; then
 	if [ "$1" != "ovpn_initpki" ]; then
-		#if [ ! -d $pki ]; then
-		#	mkdir $pki
-		#fi
-
 		# Let the user know that they need to run the initpki script
 		echo -e "PKI configuration not found. You can initialize it now by running:\n"
-		echo -e "docker run --rm --volumes-from <this container> -it <this image> ovpn_initpki\n"
-		echo -e "Or you can just map in $pki/ using a volume. Make sure to include all the following files at a minimum:\n"
-		#echo -e "certs/server.crt        Your server certificate"
-		echo -e "issued/<HOSTNAME>.crt   Your server certificate"
-		#echo -e "certs/ca.crt            Your CA server's certificate"
-		echo -e "issued/ca.crt           Your CA certificate"
-		#echo -e "private/server.key      Your server's private key"
-		echo -e "private/<HOSTNAME>.key  Your server private key"
-		echo -e "private/ca.key          Your CA private key"
-		echo -e "ta.key                  Your OpenVPN TLS key"
+		echo -e "docker run --rm --volumes-from $CONTAINER -it $IMAGE ovpn_initpki\n"
+#		echo -e "Or you can just map in $pki/ using a volume. Make sure to include all the following files at a minimum:\n"
+#		echo -e "issued/${HOSTNAME}.crt   Your server certificate"
+#		echo -e "issued/ca.crt           Your CA certificate"
+#		echo -e "private/${HOSTNAME}.key  Your server private key"
+#		echo -e "private/ca.key          Your CA private key"
+#		echo -e "ta.key                  Your OpenVPN TLS key"
 		exit 1
 	fi
 fi

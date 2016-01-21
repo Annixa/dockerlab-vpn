@@ -15,8 +15,6 @@ docker rmi `docker images -qf dangling=true`
 # it should complain about not having an ovpn_env.sh
 docker-compose up -d
 
-# run the genconfig script
-docker run --rm --volumes-from vpn -it vpn_vpn ovpn_genconfig -u udp://dev.dockerlab.net
 # run the initpki script
 docker run --rm --volumes-from vpn -it vpn_vpn ovpn_initpki
 # create a new client
